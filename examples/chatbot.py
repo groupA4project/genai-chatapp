@@ -3,13 +3,13 @@ from streamlit_chat import message
 import requests
 
 st.set_page_config(
-    page_title="Streamlit Chat - Demo",
+    page_title="GroupA4project Demo Application",
     page_icon=":robot:"
 )
 API_URL = "https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill"
 headers = {"Authorization": st.secrets['api_key']}
 
-st.header("Streamlit Chat - Demo")
+st.header("GroupA4project Demo Application")
 st.markdown("[Github](https://github.com/groupA4project/genai-chatapp)")
 
 if 'generated' not in st.session_state:
