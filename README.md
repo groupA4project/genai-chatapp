@@ -1,127 +1,189 @@
-# genai-chatapp
+# CI/CD Setup for Demo Chat Application
 
-## Installation
+This documentation provides an overview of the CI/CD setup for deploying a demo chat application to Azure Container Instances using GitHub Actions.
 
-Install `streamlit-chat` with pip
-```bash
-pip install streamlit-chat 
+## Summary
+
+This CI/CD pipeline automates the deployment of a demo chat application into Azure Container Instances (ACI). The pipeline is defined using GitHub Actions and ensures that every change to the application is tested and deployed automatically. This setup streamlines the development process, reduces manual errors, and ensures that the latest version of the application is always available.
+
+## CICD
+
+![CICD](./cicd.jpeg)
+
+### Checkout
+- **Purpose**: This stage checks out the code from the GitHub repository, enabling subsequent stages to access the codebase.
+- **Steps**:
+  - Check out the GitHub repository using the `actions/checkout@main` action.
+
+### PreBuild-Test
+- **Purpose**: This stage runs pre-build tests to ensure the codebase is ready for the build process.
+- **Steps**:
+  - Check out the GitHub repository.
+  - Run pre-build tests to validate the codebase.
+
+### Build
+- **Purpose**: This stage builds the Docker image for the chat application and pushes it to the Azure Container Registry.
+- **Steps**:
+  - Check out the GitHub repository.
+  - Login to Azure Container Registry using Azure CLI.
+  - Build the Docker image and tag it with the GitHub commit SHA.
+  - Push the Docker image to the Azure Container Registry.
+
+### PreDeploy-Test
+- **Purpose**: This stage runs pre-deploy tests to ensure the Docker image is ready for deployment.
+- **Steps**:
+  - Check out the GitHub repository.
+  - Run pre-deploy tests to validate the Docker image.
+
+### Deploy
+- **Purpose**: This stage deploys the Docker image to Azure Container Instances (ACI).
+- **Steps**:
+  - Check out the GitHub repository.
+  - Login to Azure Container Registry using Azure CLI.
+  - Deploy the Docker image to Azure Container Instances.
+
+### PostDeploy-Test
+- **Purpose**: This stage runs post-deploy tests to validate the deployed application.
+- **Steps**:
+  - Check out the GitHub repository.
+  - Run post-deploy tests to validate the deployed application.
+
+
+## Setup
+
+### Prerequisites
+
+1. **Azure Account:** Ensure you have an Azure account.
+2. **Azure Container Registry (ACR):** Set up an ACR to store your Docker images.
+3. **Azure Service Principal:** Create a service principal with sufficient permissions to deploy to ACI.
+4. **GitHub Repository:** Ensure your code is in a GitHub repository.
+
+### GitHub Actions Configuration
+
+Create a GitHub Actions workflow file in your repository (e.g., `.github/workflows/deploy.yml`) with the following configuration:
+
+```yaml
+on: [push]
+name: ChatApp CICD
+
+jobs:
+  Checkout:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 'Checkout GitHub Action'
+        uses: actions/checkout@main
+
+  PreBuild-Test:
+    runs-on: ubuntu-latest
+    needs: Checkout
+    steps:
+      - name: 'Checkout Repository'
+        uses: actions/checkout@main
+      - name: 'Run Pre-Build Tests'
+        run: |
+          echo "Running pre-build tests..."
+          # Replace with actual test commands
+          echo "Tests completed."
+
+  Build:
+    runs-on: ubuntu-latest
+    needs: PreBuild-Test
+    steps:
+      - name: 'Checkout Repository'
+        uses: actions/checkout@main
+      - name: 'Login via Azure CLI'
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: 'Build and push image'
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+      - run: |
+          docker build . -t ${{ secrets.REGISTRY_LOGIN_SERVER }}/chatapp:${{ github.sha }}
+          docker push ${{ secrets.REGISTRY_LOGIN_SERVER }}/chatapp:${{ github.sha }}
+
+  PreDeploy-Test:
+    runs-on: ubuntu-latest
+    needs: Build
+    steps:
+      - name: 'Checkout Repository'
+        uses: actions/checkout@main
+      - name: 'Run Pre-Deploy Tests'
+        run: |
+          echo "Running pre-deploy tests..."
+          # Replace with actual test commands
+          echo "Tests completed."
+
+  Deploy:
+    runs-on: ubuntu-latest
+    needs: PreDeploy-Test
+    steps:
+      - name: 'Checkout Repository'
+        uses: actions/checkout@main
+      - name: 'Login via Azure CLI'
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: 'Deploy to Azure Container Instances'
+        uses: 'azure/aci-deploy@v1'
+        with:
+          resource-group: ${{ secrets.RESOURCE_GROUP }}
+          dns-name-label: ${{ secrets.RESOURCE_GROUP }}
+          image: ${{ secrets.REGISTRY_LOGIN_SERVER }}/chatapp:${{ github.sha }}
+          registry-login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
+          registry-username: ${{ secrets.REGISTRY_USERNAME }}
+          registry-password: ${{ secrets.REGISTRY_PASSWORD }}
+          name: aci-chatapp
+          location: 'east us'
+
+  PostDeploy-Test:
+    runs-on: ubuntu-latest
+    needs: Deploy
+    steps:
+      - name: 'Checkout Repository'
+        uses: actions/checkout@main
+      - name: 'Run Post-Deploy Tests'
+        run: |
+          echo "Running post-deploy tests..."
+          # Replace with actual test commands
+          echo "Tests completed."
+
 ```
 
-usage, import the `message` function from `streamlit_chat`
-```py
-import streamlit as st
-from streamlit_chat import message
+## Secrets
 
-message("My message") 
-message("Hello bot!", is_user=True)  # align's the message to the right
-```
-   
-### Screenshot
+Ensure you add the following secrets to your GitHub repository under `Settings > Secrets and variables > Actions`:
 
-![chatbot-og](https://user-images.githubusercontent.com/90775147/210397700-5ab9e00d-a61b-4bc9-a34a-b5bd4454b084.png)
+- `AZURE_CONTAINER_REGISTRY_LOGIN_SERVER`
+- `AZURE_CONTAINER_REGISTRY_USERNAME`
+- `AZURE_CONTAINER_REGISTRY_PASSWORD`
+- `AZURE_RESOURCE_GROUP`
+- `AZURE_LOCATION`
 
-Another example for html in chat, and Refresh chat button
-```py
-import streamlit as st
-from streamlit_chat import message
-from streamlit.components.v1 import html
+## Demo Link
 
-def on_input_change():
-    user_input = st.session_state.user_input
-    st.session_state.past.append(user_input)
-    st.session_state.generated.append("The messages from Bot\nWith new line")
+You can access the deployed demo chat application using the following link:
 
-def on_btn_click():
-    del st.session_state.past[:]
-    del st.session_state.generated[:]
+[Demo Chat Application](http://groupa4project-chatapp.eastus.azurecontainer.io/)
 
-audio_path = "https://docs.google.com/uc?export=open&id=16QSvoLWNxeqco_Wb2JvzaReSAw5ow6Cl"
-img_path = "https://www.groundzeroweb.com/wp-content/uploads/2017/05/Funny-Cat-Memes-11.jpg"
-youtube_embed = '''
-<iframe width="400" height="215" src="https://www.youtube.com/embed/LMQ5Gauy17k" title="YouTube video player" frameborder="0" allow="accelerometer; encrypted-media;"></iframe>
-'''
 
-markdown = """
-### HTML in markdown is ~quite~ **unsafe**
-<blockquote>
-  However, if you are in a trusted environment (you trust the markdown). You can use allow_html props to enable support for html.
-</blockquote>
+## Flow
 
-* Lists
-* [ ] todo
-* [x] done
+1. **Code Push:** When code is pushed to the `main` branch, the GitHub Actions workflow is triggered.
+2. **Checkout Code:** The workflow checks out the latest code from the repository.
+3. **Set Up Docker Buildx:** The workflow sets up Docker Buildx for building multi-platform Docker images.
+4. **Login to ACR:** The workflow logs in to the Azure Container Registry using the provided credentials.
+5. **Build and Push Image:** The workflow builds the Docker image for the chat application and pushes it to the Azure Container Registry.
+6. **Deploy to ACI:** The workflow deploys the Docker image from ACR to Azure Container Instances.
 
-Math:
+## How to Test
 
-Lift($L$) can be determined by Lift Coefficient ($C_L$) like the following
-equation.
+1. **Push Code Changes:** Make changes to your code and push them to the `main` branch.
+2. **Monitor GitHub Actions:** Check the Actions tab in your GitHub repository to monitor the progress of the workflow.
+3. **Access the Application:** Once the deployment is complete, access the demo chat application using the demo link provided above.
+4. **Verify Deployment:** Ensure that the application is running as expected by interacting with the chat interface.
 
-$$
-L = \\frac{1}{2} \\rho v^2 S C_L
-$$
-
-~~~py
-import streamlit as st
-
-st.write("Python code block")
-~~~
-
-~~~js
-console.log("Here is some JavaScript code")
-~~~
-
-"""
-
-table_markdown = '''
-A Table:
-
-| Feature     | Support              |
-| ----------: | :------------------- |
-| CommonMark  | 100%                 |
-| GFM         | 100% w/ `remark-gfm` |
-'''
-
-st.session_state.setdefault(
-    'past', 
-    ['plan text with line break',
-     'play the song "Dancing Vegetables"', 
-     'show me image of cat', 
-     'and video of it',
-     'show me some markdown sample',
-     'table in markdown']
-)
-st.session_state.setdefault(
-    'generated', 
-    [{'type': 'normal', 'data': 'Line 1 \n Line 2 \n Line 3'},
-     {'type': 'normal', 'data': f'<audio controls src="{audio_path}"></audio>'}, 
-     {'type': 'normal', 'data': f'<img width="100%" height="200" src="{img_path}"/>'}, 
-     {'type': 'normal', 'data': f'{youtube_embed}'},
-     {'type': 'normal', 'data': f'{markdown}'},
-     {'type': 'table', 'data': f'{table_markdown}'}]
-)
-
-st.title("Chat placeholder")
-
-chat_placeholder = st.empty()
-
-with chat_placeholder.container():    
-    for i in range(len(st.session_state['generated'])):                
-        message(st.session_state['past'][i], is_user=True, key=f"{i}_user")
-        message(
-            st.session_state['generated'][i]['data'], 
-            key=f"{i}", 
-            allow_html=True,
-            is_table=True if st.session_state['generated'][i]['type']=='table' else False
-        )
-    
-    st.button("Clear message", on_click=on_btn_click)
-
-with st.container():
-    st.text_input("User Input:", on_change=on_input_change, key="user_input")
-
-```
-
-### Screenshot
-
-![chatbot-markdown-sp](https://user-images.githubusercontent.com/27276267/224665635-1d9c1b8e-92ba-4f67-9e27-ad5d4eacaa43.png)
-
+By following these steps, you can ensure that your demo chat application is continuously tested and deployed to Azure Container Instances efficiently.

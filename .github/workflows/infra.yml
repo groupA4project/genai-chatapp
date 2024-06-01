@@ -1,0 +1,39 @@
+name: Manage Azure Container Instance
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Select action to perform'
+        required: true
+        default: 'start'
+        type: choice
+        options:
+          - start
+          - stop
+      aci_name:
+        description: 'Enter the name of the Azure Container Instance'
+        required: true
+        default: 'aci-chatapp'
+        type: string
+
+jobs:
+  manage-aci:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Azure CLI Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Start or Stop Container Instance
+      run: |
+        if [ "${{ github.event.inputs.action }}" == "start" ]; then
+          az container start --resource-group ${{ secrets.RESOURCE_GROUP }} --name ${{ github.event.inputs.aci_name }}
+        elif [ "${{ github.event.inputs.action }}" == "stop" ]; then
+          az container stop --resource-group ${{ secrets.RESOURCE_GROUP }} --name ${{ github.event.inputs.aci_name }}
+        fi
