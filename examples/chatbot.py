@@ -3,13 +3,13 @@ from streamlit_chat import message
 import requests
 
 st.set_page_config(
-    page_title="GroupA4project Demo Application",
+    page_title="GroupA4week6deliverable Demo Application",
     page_icon=":robot:"
 )
 API_URL = "https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill"
 headers = {"Authorization": st.secrets['api_key']}
 
-st.header("GroupA4project Demo Application")
+st.header("GroupA4week6deliverable Demo Application")
 st.markdown("[Github](https://github.com/groupA4project/genai-chatapp)")
 
 if 'generated' not in st.session_state:
@@ -24,7 +24,7 @@ def query(payload):
 
 def get_text():
     input_text = st.text_input("You: ","Hello, how are you?", key="input")
-    return input_text 
+   i return input_text 
 
 
 user_input = get_text()
