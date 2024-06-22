@@ -24,7 +24,7 @@ def query(payload):
 
 def get_text():
     input_text = st.text_input("You: ","Hello, how are you?", key="input")
-   i return input_text 
+    return input_text 
 
 
 user_input = get_text()
