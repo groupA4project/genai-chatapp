@@ -3,7 +3,7 @@ from streamlit_chat import message
 import requests
 
 st.set_page_config(
-    page_title="GroupA4week9deliverable Demo Application",
+    page_title="GroupA4week11deliverable Demo Application",
     page_icon=":robot:",
     layout="wide"
 )
@@ -40,7 +40,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Header
-st.markdown("<div class='header'><h1>GroupA4week9deliverable Demo Application</h1></div>", unsafe_allow_html=True)
+st.markdown("<div class='header'><h1>GroupA4week11deliverable Demo Application</h1></div>", unsafe_allow_html=True)
 st.markdown("[Github](https://github.com/groupA4project/genai-chatapp)")
 
 # Initializing session state
