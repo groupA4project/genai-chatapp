@@ -5,7 +5,7 @@ import requests
 st.set_page_config(
     page_title="GroupA4Project Demo Application",
     page_icon=":robot:",
-    layouide"
+    layout="wide"
 )
 
 API_URL = "https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill"
