@@ -41,7 +41,7 @@ st.markdown("""
 
 # Header
 st.markdown("<div class='header'><h1>GroupA4Project Demo Application</h1></div>", unsafe_allow_html=True)
-st.markdown("[Github](https://github.com/groupA4Project /genai-chatapp)")
+st.markdown("[Github](https://github.com/groupA4Project/genai-chatapp)")
 
 # Initializing session state
 if 'generated' not in st.session_state:
