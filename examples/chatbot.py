@@ -3,9 +3,9 @@ from streamlit_chat import message
 import requests
 
 st.set_page_config(
-    page_title="GroupA4week11deliverable Demo Application",
+    page_title="GroupA4Project Demo Application",
     page_icon=":robot:",
-    layout="wide"
+    layouide"
 )
 
 API_URL = "https://api-inference.huggingface.co/models/facebook/blenderbot-400M-distill"
@@ -40,8 +40,8 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Header
-st.markdown("<div class='header'><h1>GroupA4week11deliverable Demo Application</h1></div>", unsafe_allow_html=True)
-st.markdown("[Github](https://github.com/groupA4project/genai-chatapp)")
+st.markdown("<div class='header'><h1>GroupA4Project Demo Application</h1></div>", unsafe_allow_html=True)
+st.markdown("[Github](https://github.com/groupA4Project /genai-chatapp)")
 
 # Initializing session state
 if 'generated' not in st.session_state:
